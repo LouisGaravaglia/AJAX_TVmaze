@@ -23,15 +23,23 @@ async function searchShows(query) {
 
   let res = await axios.get("http://api.tvmaze.com/search/shows", { params: { q: query } })
 
-  console.log(res.data[0].show.summary);
+  
+
+  let show = res.data[0].show;
+  let missingImg = "https://tinyurl.com/tv-missing";
+
+  console.log(show.id);
+  
+
+  
   
 
   return [
     {
-      id: 1767,
-      name: "The Bletchley Circle",
-      summary: res.data[0].show.summary,
-      image: "http://static.tvmaze.com/uploads/images/medium_portrait/147/369403.jpg"
+      id: show.id,
+      name: show.name,
+      summary: show.summary,
+      image: show.image ? show.image.medium : missingImg
     }
   ]
 }
@@ -50,6 +58,7 @@ function populateShows(shows) {
     let $item = $(
       `<div class="col-md-6 col-lg-3 Show" data-show-id="${show.id}">
          <div class="card" data-show-id="${show.id}">
+         <img class="card-img-top" src="${show.image}>
            <div class="card-body">
              <h5 class="card-title">${show.name}</h5>
              <p class="card-text">${show.summary}</p>
@@ -77,8 +86,11 @@ $("#search-form").on("submit", async function handleSearch (evt) {
   $("#episodes-area").hide();
 
   let shows = await searchShows(query);
+  
 
   populateShows(shows);
+  getEpisodes(shows[0].id)
+
 });
 
 
@@ -87,9 +99,27 @@ $("#search-form").on("submit", async function handleSearch (evt) {
  */
 
 async function getEpisodes(id) {
-  // TODO: get episodes from tvmaze
-  //       you can get this by making GET request to
-  //       http://api.tvmaze.com/shows/SHOW-ID-HERE/episodes
 
-  // TODO: return array-of-episode-info, as described in docstring above
+  let episodes = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`)
+  let data = episodes.data;
+  const $showsList = $("#shows-list");
+  let $list = $("<ul>");
+
+;
+
+  for (const key of data) {
+
+    console.log(key.season);
+  console.log(key.number);
+  console.log(key.name);
+
+  let li = document.createElement("li");
+  li.innerText = `Season: ${key.season} (Episode #${key.number} ${key.name})`;
+
+  $list.append(li);
+    $showsList.append($list);
+    }
+  
+
+ 
 }
