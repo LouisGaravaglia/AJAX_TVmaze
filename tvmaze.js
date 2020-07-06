@@ -1,61 +1,40 @@
-/** Given a query string, return array of matching shows:
- *     { id, name, summary, episodesUrl }
- */
-
-
-/** Search Shows
- *    - given a search term, search for tv shows that
- *      match that query.  The function is async show it
- *       will be returning a promise.
- *
- *   - Returns an array of objects. Each object should include
- *     following show information:
- *    {
-        id: <show id>,
-        name: <show name>,
-        summary: <show summary>,
-        image: <an image from the show data, or a default imege if no image exists, (image isn't needed until later)>
-      }
- */
 async function searchShows(query) {
-  // TODO: Make an ajax request to the searchShows api.  Remove
-  // hard coded data.
-
-  let res = await axios.get("http://api.tvmaze.com/search/shows", { params: { q: query } })
-
-  console.log(res.data[0].show.summary);
-  
-
-  return [
-    {
-      id: 1767,
-      name: "The Bletchley Circle",
-      summary: res.data[0].show.summary,
-      image: "http://static.tvmaze.com/uploads/images/medium_portrait/147/369403.jpg"
+  const res = await axios.get("http://api.tvmaze.com/search/shows", {
+    params: {
+      q: query
     }
-  ]
+  })
+
+  const show = res.data[0].show;
+  const missingImg = "https://tinyurl.com/tv-missing";
+
+  return [{
+    id: show.id,
+    name: show.name,
+    summary: show.summary,
+    image: show.image ? show.image.medium : missingImg
+  }]
 }
 
 
 
-/** Populate shows list:
- *     - given list of shows, add shows to DOM
- */
 
 function populateShows(shows) {
   const $showsList = $("#shows-list");
-  $showsList.empty();
 
   for (let show of shows) {
-    let $item = $(
-      `<div class="col-md-6 col-lg-3 Show" data-show-id="${show.id}">
+    const $item = $(
+      `<div class="col-md-6 col-lg-4 Show" data-show-id="${show.id}">
          <div class="card" data-show-id="${show.id}">
-           <div class="card-body">
+         <img class="card-img-top" src="${show.image}">
+           <div class="card-body ${show.id}">
              <h5 class="card-title">${show.name}</h5>
              <p class="card-text">${show.summary}</p>
+             <button class="btn btn-outline-success">GET EPISODES</button>
+             <ul id="episode-list"></ul>
            </div>
          </div>
-       </div>
+       </div> 
       `);
 
     $showsList.append($item);
@@ -63,33 +42,53 @@ function populateShows(shows) {
 }
 
 
-/** Handle search form submission:
- *    - hide episodes area
- *    - get list of matching shows and show in shows list
- */
 
-$("#search-form").on("submit", async function handleSearch (evt) {
+$("#search-form").on("submit", async function handleSearch(evt) {
   evt.preventDefault();
 
-  let query = $("#search-query").val();
+  const query = $("#search-query").val();
   if (!query) return;
 
   $("#episodes-area").hide();
 
-  let shows = await searchShows(query);
-
+  const shows = await searchShows(query);
   populateShows(shows);
+
 });
 
 
-/** Given a show ID, return list of episodes:
- *      { id, name, season, number }
- */
+
+$("#shows-list").on("click", async function (e) {
+
+  const showID = e.target.parentElement.classList[1];
+  const target = e.target.parentElement;
+  const list = $(e.target.parentElement.children[5]);
+
+
+  list.empty();
+  list.toggleClass('display-none');
+
+  const episodes = await getEpisodes(showID);
+  populateEpisodes(episodes, target);
+})
+
+
 
 async function getEpisodes(id) {
-  // TODO: get episodes from tvmaze
-  //       you can get this by making GET request to
-  //       http://api.tvmaze.com/shows/SHOW-ID-HERE/episodes
+  const episodes = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`)
+  const data = episodes.data;
 
-  // TODO: return array-of-episode-info, as described in docstring above
+  return data;
+}
+
+
+
+function populateEpisodes(episodes, target) {
+  const targetUL = target.children[5];
+
+  for (const episode of episodes) {
+    const li = document.createElement("li");
+    li.innerText = `Season: ${episode.season} (Episode #${episode.number} ${episode.name})`;
+    targetUL.append(li);
+  }
 }
