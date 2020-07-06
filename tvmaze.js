@@ -21,27 +21,22 @@ async function searchShows(query) {
   // TODO: Make an ajax request to the searchShows api.  Remove
   // hard coded data.
 
-  let res = await axios.get("http://api.tvmaze.com/search/shows", { params: { q: query } })
+  let res = await axios.get("http://api.tvmaze.com/search/shows", {
+    params: {
+      q: query
+    }
+  })
 
-  
 
   let show = res.data[0].show;
   let missingImg = "https://tinyurl.com/tv-missing";
 
-  console.log(show.id);
-  
-
-  
-  
-
-  return [
-    {
-      id: show.id,
-      name: show.name,
-      summary: show.summary,
-      image: show.image ? show.image.medium : missingImg
-    }
-  ]
+  return [{
+    id: show.id,
+    name: show.name,
+    summary: show.summary,
+    image: show.image ? show.image.medium : missingImg
+  }]
 }
 
 
@@ -62,9 +57,13 @@ function populateShows(shows) {
            <div class="card-body">
              <h5 class="card-title">${show.name}</h5>
              <p class="card-text">${show.summary}</p>
+             <button class="btn btn-outline-success">GET EPISODES</button>
+             <ul id="episode-list"></ul>
            </div>
          </div>
+         
        </div>
+       
       `);
 
     $showsList.append($item);
@@ -77,7 +76,7 @@ function populateShows(shows) {
  *    - get list of matching shows and show in shows list
  */
 
-$("#search-form").on("submit", async function handleSearch (evt) {
+$("#search-form").on("submit", async function handleSearch(evt) {
   evt.preventDefault();
 
   let query = $("#search-query").val();
@@ -86,12 +85,23 @@ $("#search-form").on("submit", async function handleSearch (evt) {
   $("#episodes-area").hide();
 
   let shows = await searchShows(query);
+  populateShows(shows);
+
   
 
-  populateShows(shows);
-  getEpisodes(shows[0].id)
-
 });
+
+
+
+$("#shows-list").on("click", async function(e) {
+  let showID = e.target.parentElement.dataset.showId;
+  $("#episode-list").empty();
+  $("#episode-list").toggleClass('display-none');
+  let episodes = await getEpisodes(showID);
+  populateEpisodes(episodes);
+  
+})
+
 
 
 /** Given a show ID, return list of episodes:
@@ -99,27 +109,23 @@ $("#search-form").on("submit", async function handleSearch (evt) {
  */
 
 async function getEpisodes(id) {
-
   let episodes = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`)
   let data = episodes.data;
-  const $showsList = $("#shows-list");
-  let $list = $("<ul>");
 
-;
+  return data;
 
-  for (const key of data) {
+}
 
-    console.log(key.season);
-  console.log(key.number);
-  console.log(key.name);
 
-  let li = document.createElement("li");
-  li.innerText = `Season: ${key.season} (Episode #${key.number} ${key.name})`;
 
-  $list.append(li);
-    $showsList.append($list);
-    }
-  
+function populateEpisodes(episodes) {
+  const episodeList = $("#episode-list");
+  // let $list = $("<ul>");
 
- 
+  for (const episode of episodes) {
+    let li = document.createElement("li");
+    li.innerText = `Season: ${episode.season} (Episode #${episode.number} ${episode.name})`;
+    episodeList.append(li);
+    // $showsList.append($list);
+  }
 }
