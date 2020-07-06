@@ -30,6 +30,9 @@ async function searchShows(query) {
 
   let show = res.data[0].show;
   let missingImg = "https://tinyurl.com/tv-missing";
+  console.log(show.id);
+  
+  
 
   return [{
     id: show.id,
@@ -53,8 +56,8 @@ function populateShows(shows) {
     let $item = $(
       `<div class="col-md-6 col-lg-3 Show" data-show-id="${show.id}">
          <div class="card" data-show-id="${show.id}">
-         <img class="card-img-top" src="${show.image}>
-           <div class="card-body">
+         <img class="card-img-top" src="${show.image}">
+           <div class="card-body ${show.id}">
              <h5 class="card-title">${show.name}</h5>
              <p class="card-text">${show.summary}</p>
              <button class="btn btn-outline-success">GET EPISODES</button>
@@ -94,10 +97,12 @@ $("#search-form").on("submit", async function handleSearch(evt) {
 
 
 $("#shows-list").on("click", async function(e) {
-  let showID = e.target.parentElement.dataset.showId;
+
+  
+  let showID = e.target.parentElement.classList[1];
   const target = e.target.parentElement;
-  const list = $(e.target.parentElement.children[6]);
-  console.log(e.target.parentElement.children[6]);
+  const list = $(e.target.parentElement.children[5]);
+  console.log(e.target.parentElement.children[5]);
   
   list.empty();
   list.toggleClass('display-none');
@@ -125,7 +130,7 @@ async function getEpisodes(id) {
 function populateEpisodes(episodes, target) {
   // const episodeList = $("#episode-list");
   // let $list = $("<ul>");
-  const targetUL = target.children[6];
+  const targetUL = target.children[5];
   
 
   for (const episode of episodes) {
