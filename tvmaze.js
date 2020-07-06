@@ -47,7 +47,7 @@ async function searchShows(query) {
 
 function populateShows(shows) {
   const $showsList = $("#shows-list");
-  $showsList.empty();
+  // $showsList.empty();
 
   for (let show of shows) {
     let $item = $(
@@ -95,10 +95,14 @@ $("#search-form").on("submit", async function handleSearch(evt) {
 
 $("#shows-list").on("click", async function(e) {
   let showID = e.target.parentElement.dataset.showId;
-  $("#episode-list").empty();
-  $("#episode-list").toggleClass('display-none');
+  const target = e.target.parentElement;
+  const list = $(e.target.parentElement.children[6]);
+  console.log(e.target.parentElement.children[6]);
+  
+  list.empty();
+  list.toggleClass('display-none');
   let episodes = await getEpisodes(showID);
-  populateEpisodes(episodes);
+  populateEpisodes(episodes, target);
   
 })
 
@@ -118,14 +122,16 @@ async function getEpisodes(id) {
 
 
 
-function populateEpisodes(episodes) {
-  const episodeList = $("#episode-list");
+function populateEpisodes(episodes, target) {
+  // const episodeList = $("#episode-list");
   // let $list = $("<ul>");
+  const targetUL = target.children[6];
+  
 
   for (const episode of episodes) {
     let li = document.createElement("li");
     li.innerText = `Season: ${episode.season} (Episode #${episode.number} ${episode.name})`;
-    episodeList.append(li);
+    targetUL.append(li);
     // $showsList.append($list);
   }
 }
