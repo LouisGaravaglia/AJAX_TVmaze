@@ -1,4 +1,3 @@
-
 async function searchShows(query) {
   const res = await axios.get("http://api.tvmaze.com/search/shows", {
     params: {
@@ -59,13 +58,13 @@ $("#search-form").on("submit", async function handleSearch(evt) {
 
 
 
-$("#shows-list").on("click", async function(e) {
+$("#shows-list").on("click", async function (e) {
 
   const showID = e.target.parentElement.classList[1];
   const target = e.target.parentElement;
   const list = $(e.target.parentElement.children[5]);
-  
-  
+
+
   list.empty();
   list.toggleClass('display-none');
 
@@ -77,7 +76,7 @@ $("#shows-list").on("click", async function(e) {
 
 async function getEpisodes(id) {
   const episodes = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`)
-  const  data = episodes.data;
+  const data = episodes.data;
 
   return data;
 }
@@ -86,7 +85,7 @@ async function getEpisodes(id) {
 
 function populateEpisodes(episodes, target) {
   const targetUL = target.children[5];
-  
+
   for (const episode of episodes) {
     const li = document.createElement("li");
     li.innerText = `Season: ${episode.season} (Episode #${episode.number} ${episode.name})`;
